@@ -1,6 +1,8 @@
 import express from "express";
 import User from "../models/User.js";
 
+
+
 const router = express.Router();
 
 // CREATE USER
@@ -14,13 +16,24 @@ router.post("/", async (req, res) => {
         error: "Name and age are required",
       });
     }
-
     const user = await User.create({ name, age });
 
     res.status(201).json({
       message: "User created successfully",
       data: user,
     });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+});
+
+
+router.get("/", async (req, res) => {
+  try {
+    const userlist = await User.find();
+    res.status(200).json(userlist);
   } catch (error) {
     res.status(500).json({
       error: error.message,
