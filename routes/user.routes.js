@@ -25,6 +25,31 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// UPDATE EXISTING USER
+router.put("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updateuser = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateuser, {
+      new: true,
+    });
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+    res.status(200).json({
+      message: "User updated Successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "invalid user id",
+    });
+  }
+});
+
 // CREATE USER
 router.post("/", async (req, res) => {
   try {
