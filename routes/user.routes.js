@@ -1,9 +1,28 @@
 import express from "express";
 import User from "../models/User.js";
 
-
-
 const router = express.Router();
+
+router.get("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const found_id = await User.findById(id);
+    if (found_id) {
+      return res.status(200).json({
+        message: "user founded",
+        data: found_id,
+      });
+    }
+    res.status(400).json({
+      message: "not found",
+    });
+  } catch (error) {
+    console.log("error occurs");
+    res.status(400).json({
+      message: "not found",
+    });
+  }
+});
 
 // CREATE USER
 router.post("/", async (req, res) => {
@@ -28,7 +47,6 @@ router.post("/", async (req, res) => {
     });
   }
 });
-
 
 router.get("/", async (req, res) => {
   try {
