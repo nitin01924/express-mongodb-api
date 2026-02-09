@@ -6,20 +6,21 @@ const router = express.Router();
 router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const found_id = await User.findById(id);
-    if (found_id) {
-      return res.status(200).json({
-        message: "user founded",
-        data: found_id,
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
       });
     }
-    res.status(400).json({
-      message: "not found",
+
+    res.status(200).json({
+      message: "User found",
+      data: user,
     });
   } catch (error) {
-    console.log("error occurs");
     res.status(400).json({
-      message: "not found",
+      message: "Invalid user id",
     });
   }
 });
