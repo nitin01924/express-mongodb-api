@@ -5,12 +5,12 @@ import userRoutes from "./routes/user.routes.js";
 
 dotenv.config();
 const app = express();
-app.use(express.json());
 
+// MIDDLEWARE
+app.use(express.json());
 app.use("/users", userRoutes);
 
-// middleware
-
+// HOME-PAGE
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
@@ -22,6 +22,7 @@ app.get("/users-test", (req, res) => {
 const startServer = async () => {
   await connectDB();
 
+  //LISTNING APP ON PORT
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
