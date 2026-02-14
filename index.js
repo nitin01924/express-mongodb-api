@@ -21,7 +21,6 @@ app.get("/users-test", (req, res) => {
 });
 
 app.use(errorMiddleware);
-
 //LISTNING APP ON PORT
 const startServer = async () => {
   await connectDB();

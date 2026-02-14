@@ -40,22 +40,23 @@ router.get("/", async (req, res) => {
 });
 
 // READ USER
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const user = await User.findById(id);
+    const user = await User.findById(req.params.id);
 
     if (!user) {
       const error = new Error("User not found");
-      error.status = 404;
+      error.statusCode = 404;
       throw error;
     }
 
-    res.status(200).json({
-      message: "User found",
-      data: user,
-    });
+    res.status(200).json(user);
   } catch (error) {
+    // Handling invalid ObjectId format
+    if (error.name === "CastError") {
+      error.statusCode = 400;
+      error.message = "Invalid user ID";
+    }
     next(error);
   }
 });
