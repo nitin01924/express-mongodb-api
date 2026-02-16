@@ -1,8 +1,16 @@
 const errorMiddleware = (err, req, res, next) => {
-  const status = err.statusCode || 500;
+  let status = err.statusCode || 500;
+  let message = err.message || "Internal Server Error";
+
+  if (err.name === "CastError") {
+    status = 400;
+    message = "Invalid ID format";
+  }
+
   res.status(status).json({
     success: false,
-    message: err.message || "internal server error",
+    message,
   });
 };
+
 export default errorMiddleware;

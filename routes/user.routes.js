@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../models/User.js";
+import asyncHandler from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
@@ -40,26 +41,22 @@ router.get("/", async (req, res) => {
 });
 
 // READ USER
-router.get("/:id", async (req, res, next) => {
-  try {
+router.get(
+  "/:id",
+  asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.params.id);
-
     if (!user) {
-      const error = new Error("User not found");
+      const error = new Error("User not found!!");
       error.statusCode = 404;
       throw error;
     }
 
-    res.status(200).json(user);
-  } catch (error) {
-    // Handling invalid ObjectId format
-    if (error.name === "CastError") {
-      error.statusCode = 400;
-      error.message = "Invalid user ID";
-    }
-    next(error);
-  }
-});
+    res.status(200).json({
+      message: "data fetched",
+      data: user,
+    });
+  }),
+);
 
 // UPDATE EXISTING USER
 router.put("/:id", async (req, res) => {
