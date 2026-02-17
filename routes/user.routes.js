@@ -8,14 +8,13 @@ const router = express.Router();
 router.post(
   "/",
   asyncHandler(async (req, res) => {
-    const { name, age } = req.body;
-    const user = await User.create({ name, age });
-
-    if (!name || !age) {
-      const error = new Error("name and age does not found!");
-      error.statusCode = 404;
-      throw error;
-    }
+    const { name, email, password } = req.body;
+    const user = await User.create({ name, email, password });
+    // if (!name) {
+    //   const error = new Error("name and age does not found!");
+    //   error.statusCode = 404;
+    //   throw error;
+    // }
 
     res.status(200).json({
       message: `Created new user : ${name}`,

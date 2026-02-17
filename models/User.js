@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -8,10 +9,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: [3, "Name must be at least 3 character long."],
     },
-    age: {
-      type: Number,
-      required: [true,"Age are required."],
-      min: [1, "Age must be greate than 0"],
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      trim: true,
+      unique: true,
+      lowercase: true,
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minlength: [8, "Password must be at least 8 character"],
     },
   },
   {
@@ -19,6 +27,13 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-const User = mongoose.model("User", userSchema);
+// USERSCHEMA PRE-SAVE
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
-export default User;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+const User = mongoose.model("User", userSchema);
+export default User; // EXPORT USER
