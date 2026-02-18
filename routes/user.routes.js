@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -62,6 +63,7 @@ router.post(
 // READ ALL USERS
 router.get(
   "/",
+  protect,
   asyncHandler(async (req, res, next) => {
     const user = await User.find();
 
