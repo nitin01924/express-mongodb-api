@@ -1,20 +1,29 @@
 {
   "name": "express-mongodb-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/nitin01924/express-mongodb-api#readme",
+  "bugs": {
+    "url": "https://github.com/nitin01924/express-mongodb-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nitin01924/express-mongodb-api.git"
+  },
+  "license": "ISC",
+  "author": "Nitin01924",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6"
-  }
+  },
+  "devDependencies": {}
 }

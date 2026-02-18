@@ -1,8 +1,49 @@
 import express from "express";
 import User from "../models/User.js";
 import asyncHandler from "../middleware/asyncHandler.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
+
+// LOGIN ROUTE FOR AUTHENTICATION
+router.post(
+  "/login",
+  asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      const error = new Error(
+        "Email and password are required for login your account",
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      const error = new Error("Email is incorrect");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const ismatch = await bcrypt.compare(password, user.password);
+    if (!ismatch) {
+      const error = new Error("Password is incorrect");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.status(200).json({
+      message: "login successful",
+      token,
+    });
+  }),
+);
 
 // CREATE USER
 router.post(
@@ -10,11 +51,6 @@ router.post(
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     const user = await User.create({ name, email, password });
-    // if (!name) {
-    //   const error = new Error("name and age does not found!");
-    //   error.statusCode = 404;
-    //   throw error;
-    // }
 
     res.status(200).json({
       message: `Created new user : ${name}`,
