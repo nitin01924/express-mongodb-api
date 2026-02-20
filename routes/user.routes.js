@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import protect from "../middleware/authMiddleware.js";
+import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -49,7 +49,7 @@ router.post(
 // CREATE USER
 router.post(
   "/",
-  protect,
+
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     const user = await User.create({ name, email, password });
@@ -85,6 +85,7 @@ router.get(
 router.get(
   "/:id",
   protect,
+  authorize("admin"),
   asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.params.id);
 
