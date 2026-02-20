@@ -49,6 +49,7 @@ router.post(
 // CREATE USER
 router.post(
   "/",
+  protect,
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     const user = await User.create({ name, email, password });
@@ -83,6 +84,7 @@ router.get(
 // READ A SPECIFIC USER
 router.get(
   "/:id",
+  protect,
   asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.params.id);
 
@@ -101,6 +103,7 @@ router.get(
 // UPDATE EXISTING USER
 router.put(
   "/:id",
+  protect,
   asyncHandler(async (req, res) => {
     const id = req.params.id;
     const updateuser = req.body;
@@ -125,6 +128,7 @@ router.put(
 // DELETE USER
 router.delete(
   "/:id",
+  protect,
   asyncHandler(async (req, res) => {
     const deleteuser = await User.findByIdAndDelete(req.params.id);
 
