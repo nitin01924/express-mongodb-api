@@ -7,6 +7,20 @@ import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// CREATE USER
+router.post(
+  "/",
+  asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body;
+    const user = await User.create({ name, email, password });
+
+    res.status(200).json({
+      message: `Created new user : ${name}`,
+      data: user,
+    });
+  }),
+);
+
 // LOGIN ROUTE FOR AUTHENTICATION
 router.post(
   "/login",
@@ -42,21 +56,6 @@ router.post(
     res.status(200).json({
       message: "login successful",
       token,
-    });
-  }),
-);
-
-// CREATE USER
-router.post(
-  "/",
-
-  asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
-    const user = await User.create({ name, email, password });
-
-    res.status(200).json({
-      message: `Created new user : ${name}`,
-      data: user,
     });
   }),
 );
@@ -110,7 +109,7 @@ router.put(
     const updateuser = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(id, updateuser, {
-      new: true,
+      returnDocument:"after",
     });
 
     if (!req.body) {
