@@ -12,11 +12,23 @@ router.post(
   "/",
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
-    const user = await User.create({ name, email, password });
 
-    res.status(200).json({
-      message: `Created new user : ${name}`,
-      data: user,
+    if (!name || !email || !password) {
+      res.status(400);
+      throw new Error("Name, email and password are required");
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(400);
+      throw new Error("User already exists");
+    }
+    const user = await User.create({ name, email, password });
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     });
   }),
 );
@@ -64,7 +76,7 @@ router.post(
 router.get(
   "/",
   protect,
-  asyncHandler(async (req, res, next) => {
+  asyncHandler(async (req, res) => {
     const user = await User.find();
 
     if (!user) {
@@ -85,7 +97,7 @@ router.get(
   "/:id",
   protect,
   authorize("admin"),
-  asyncHandler(async (req, res, next) => {
+  asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -109,7 +121,7 @@ router.put(
     const updateuser = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(id, updateuser, {
-      returnDocument:"after",
+      returnDocument: "after",
     });
 
     if (!req.body) {

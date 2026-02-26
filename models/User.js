@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: [8, "Password must be at least 8 character"],
+      required: true,
+      minlength: [6, "password must be at least 6 character long."],
     },
     role: {
       type: String,
@@ -33,14 +33,13 @@ const userSchema = new mongoose.Schema(
 );
 
 // USERSCHEMA PRE-SAVE
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-
-  next();
 });
 
 const User = mongoose.model("User", userSchema);
