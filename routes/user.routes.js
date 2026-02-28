@@ -4,6 +4,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { protect, authorize } from "../middleware/authMiddleware.js";
+import { allowSelfOrAdmin } from "../middleware/ownershipMIddleware.js";
 
 const router = express.Router();
 
@@ -76,6 +77,7 @@ router.post(
 router.get(
   "/",
   protect,
+  authorize("admin"),
   asyncHandler(async (req, res) => {
     const user = await User.find();
 
@@ -96,7 +98,7 @@ router.get(
 router.get(
   "/:id",
   protect,
-  authorize("admin"),
+  allowSelfOrAdmin,
   asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
 
@@ -116,6 +118,7 @@ router.get(
 router.put(
   "/:id",
   protect,
+  allowSelfOrAdmin,
   asyncHandler(async (req, res) => {
     const id = req.params.id;
     const updateuser = req.body;
@@ -141,6 +144,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
+  allowSelfOrAdmin,
   asyncHandler(async (req, res) => {
     const deleteuser = await User.findByIdAndDelete(req.params.id);
 
