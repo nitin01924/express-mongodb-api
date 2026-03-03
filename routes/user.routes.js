@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 import { allowSelfOrAdmin } from "../middleware/ownershipMIddleware.js";
 
@@ -62,13 +63,40 @@ router.post(
       throw error;
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+    // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    //   expiresIn: "2m",
+    // });
+
+    // res.status(200).json({
+    //   message: "login successful",
+    //   token,
+    // });
+
+    // ACCESS TOKEN (15 min)
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    // REFRESH TOKEN (random string)
+    const refreshToken = crypto.randomBytes(64).toString("hex");
+
+    // Hash refresh token before saving
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    // Save hashed refresh token in DB
+    user.refreshToken = hashedRefreshToken;
+    await user.save();
+
+    // Send refresh token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false, // true in production
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.status(200).json({
-      message: "login successful",
-      token,
+      accessToken,
     });
   }),
 );

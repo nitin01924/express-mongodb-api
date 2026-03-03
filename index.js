@@ -3,12 +3,14 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/user.routes.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app = express();
 
 // MIDDLEWARE
 app.use(express.json());
+app.use(cookieParser())
 app.use("/users", userRoutes);
 
 // HOME-PAGE
