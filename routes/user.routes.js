@@ -62,16 +62,6 @@ router.post(
       error.statusCode = 401;
       throw error;
     }
-
-    // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    //   expiresIn: "2m",
-    // });
-
-    // res.status(200).json({
-    //   message: "login successful",
-    //   token,
-    // });
-
     // ACCESS TOKEN (15 min)
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "15m",
@@ -188,4 +178,55 @@ router.delete(
   }),
 );
 
+
+//CREATING REFRESH ROUTE
+router.post(
+  "/refresh",
+  asyncHandler(async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token" });
+    }
+
+    const user = await User.findOne({ refreshToken: { $exists: true } });
+
+    if (!user) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const isMatch = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken
+    );
+
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const newAccessToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+    });
+  })
+);
+
+//  CREATING LOG-OUT ROUTE
+router.post(
+  "/logout",
+  protect,
+  asyncHandler(async (req, res) => {
+    req.user.refreshToken = undefined;
+    await req.user.save();
+
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({ message: "Logged out successfully" });
+  })
+);
 export default router;
