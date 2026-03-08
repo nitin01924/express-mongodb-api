@@ -1,127 +1,25 @@
 import express from "express";
-import User from "../models/User.js";
-import asyncHandler from "../middleware/asyncHandler.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import crypto from "crypto";
+import {
+  createUser,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+} from "../controller/user.controller.js";
+
 import { protect, authorize } from "../middleware/authMiddleware.js";
 import { allowSelfOrAdmin } from "../middleware/ownershipMIddleware.js";
 
 const router = express.Router();
 
-// CREATE USER
-router.post(
-  "/signup",
-  asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+router.post("/", createUser);
 
-    if (!name || !email || !password) {
-      res.status(400);
-      throw new Error("Name, email and password are required");
-    }
+router.get("/", protect, authorize("admin"), getAllUsers);
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400);
-      throw new Error("User already exists");
-    }
-    const user = await User.create({ name, email, password });
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
-  }),
-);
+router.get("/:id", protect, allowSelfOrAdmin, getUserById);
 
+router.put("/:id", protect, allowSelfOrAdmin, updateUser);
 
-// READ ALL USERS
-router.get(
-  "/",
-  protect,
-  authorize("admin"),
-  asyncHandler(async (req, res) => {
-    const user = await User.find();
-
-    if (!user) {
-      const error = new Error("No Data available");
-      error.statusCode = 404;
-      throw error;
-    }
-
-    res.status(200).json({
-      message: "Fetched all users.",
-      data: user,
-    });
-  }),
-);
-
-// READ A SPECIFIC USER
-router.get(
-  "/:id",
-  protect,
-  allowSelfOrAdmin,
-  asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      const error = new Error("User not found!");
-      error.statusCode = 404;
-      throw error;
-    }
-    res.status(200).json({
-      message: "data fetched",
-      data: user,
-    });
-  }),
-);
-
-// UPDATE EXISTING USER
-router.put(
-  "/:id",
-  protect,
-  allowSelfOrAdmin,
-  asyncHandler(async (req, res) => {
-    const id = req.params.id;
-    const updateuser = req.body;
-
-    const updatedUser = await User.findByIdAndUpdate(id, updateuser, {
-      returnDocument: "after",
-    });
-
-    if (!req.body) {
-      const error = new Error("request body is empty.");
-      error.statusCode = 400;
-      throw error;
-    }
-
-    res.status(200).json({
-      message: "User updated Successfully",
-      data: updatedUser,
-    });
-  }),
-);
-
-// DELETE USER
-router.delete(
-  "/:id",
-  protect,
-  allowSelfOrAdmin,
-  asyncHandler(async (req, res) => {
-    const deleteuser = await User.findByIdAndDelete(req.params.id);
-
-    if (!deleteuser) {
-      const error = new Error("User does not exist.");
-      error.statusCode = 404;
-      throw error;
-    }
-    res.status(200).json({
-      message: "User deleted successfully!",
-      data: deleteuser,
-    });
-  }),
-);
-
+router.delete("/:id", protect, allowSelfOrAdmin, deleteUser);
 
 export default router;

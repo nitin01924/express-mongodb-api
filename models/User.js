@@ -9,6 +9,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: [3, "Name must be at least 3 character long."],
     },
+    age: {
+      type: Number,
+      trim: true,
+      min: 18,
+      max: 99,
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
