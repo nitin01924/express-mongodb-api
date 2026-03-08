@@ -4,13 +4,15 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/user.routes.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
 import cookieParser from "cookie-parser";
+import authRoutes from "./routes/auth.roues.js";
 
 dotenv.config();
 const app = express();
 
 // MIDDLEWARE
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
+app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 
 // HOME-PAGE

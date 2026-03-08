@@ -186,37 +186,24 @@ router.post(
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "No refresh token provided",
-      });
+      return res.status(401).json({ message: "No refresh token" });
     }
 
-    // find all users who have refreshToken
-    const users = await User.find({ refreshToken: { $exists: true } });
+    const user = await User.findOne({ refreshToken: { $exists: true } });
 
-    let validUser = null;
-
-    for (const user of users) {
-      const match = await bcrypt.compare(refreshToken, user.refreshToken);
-      if (match) {
-        validUser = user;
-        break;
-      }
+    if (!user) {
+      return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    if (!validUser) {
-      return res.status(403).json({
-        success: false,
-        message: "Invalid refresh token",
-      });
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    const newAccessToken = jwt.sign(
-      { id: validUser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" },
-    );
+    const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
 
     res.status(200).json({
       accessToken: newAccessToken,
