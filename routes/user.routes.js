@@ -35,62 +35,6 @@ router.post(
   }),
 );
 
-// LOGIN ROUTE FOR AUTHENTICATION
-router.post(
-  "/login",
-  asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      const error = new Error(
-        "Email and password are required for login your account",
-      );
-      error.statusCode = 400;
-      throw error;
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      const error = new Error("Email is incorrect");
-      error.statusCode = 401;
-      throw error;
-    }
-
-    const ismatch = await bcrypt.compare(password, user.password);
-    if (!ismatch) {
-      const error = new Error("Password is incorrect");
-      error.statusCode = 401;
-      throw error;
-    }
-    // ACCESS TOKEN (15 min)
-    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "15m",
-    });
-
-    // REFRESH TOKEN (random string)
-    const refreshToken = crypto.randomBytes(64).toString("hex");
-
-    // Hash refresh token before saving
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-
-    // Save hashed refresh token in DB
-    user.refreshToken = hashedRefreshToken;
-    await user.save();
-
-    // Send refresh token as httpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false, // true in production
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.status(200).json({
-      id: user._id,
-      accessToken,
-    });
-  }),
-);
 
 // READ ALL USERS
 router.get(
@@ -179,49 +123,5 @@ router.delete(
   }),
 );
 
-//CREATING REFRESH ROUTE
-router.post(
-  "/refresh",
-  asyncHandler(async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken) {
-      return res.status(401).json({ message: "No refresh token" });
-    }
-
-    const user = await User.findOne({ refreshToken: { $exists: true } });
-
-    if (!user) {
-      return res.status(403).json({ message: "Invalid refresh token" });
-    }
-
-    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
-
-    if (!isMatch) {
-      return res.status(403).json({ message: "Invalid refresh token" });
-    }
-
-    const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "15m",
-    });
-
-    res.status(200).json({
-      accessToken: newAccessToken,
-    });
-  }),
-);
-
-//  CREATING LOG-OUT ROUTE
-router.post(
-  "/logout",
-  protect,
-  asyncHandler(async (req, res) => {
-    req.user.refreshToken = undefined;
-    await req.user.save();
-
-    res.clearCookie("refreshToken");
-
-    res.status(200).json({ message: "Logged out successfully" });
-  }),
-);
 export default router;
