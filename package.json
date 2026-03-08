@@ -1,7 +1,7 @@
 {
   "name": "express-mongodb-api",
   "version": "1.1.0",
-  "description": "",
+  "description": "Node.js Express REST API with JWT authentication, refresh tokens, and role-based authorization",
   "keywords": [],
   "homepage": "https://github.com/nitin01924/express-mongodb-api#readme",
   "bugs": {
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/nitin01924/express-mongodb-api.git"
   },
-  "license": "ISC",
+  "license": "MIT",
   "author": "Nitin01924",
   "type": "module",
   "main": "index.js",
@@ -25,5 +25,6 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6"
-  }
+  },
+  "devDependencies": {}
 }
