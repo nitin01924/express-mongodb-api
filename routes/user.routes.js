@@ -11,7 +11,7 @@ const router = express.Router();
 
 // CREATE USER
 router.post(
-  "/",
+  "/signup",
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -86,6 +86,7 @@ router.post(
     });
 
     res.status(200).json({
+      id: user._id,
       accessToken,
     });
   }),
@@ -178,7 +179,6 @@ router.delete(
   }),
 );
 
-
 //CREATING REFRESH ROUTE
 router.post(
   "/refresh",
@@ -186,34 +186,42 @@ router.post(
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "No refresh token" });
+      return res.status(401).json({
+        success: false,
+        message: "No refresh token provided",
+      });
     }
 
-    const user = await User.findOne({ refreshToken: { $exists: true } });
+    // find all users who have refreshToken
+    const users = await User.find({ refreshToken: { $exists: true } });
 
-    if (!user) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+    let validUser = null;
+
+    for (const user of users) {
+      const match = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (match) {
+        validUser = user;
+        break;
+      }
     }
 
-    const isMatch = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken
-    );
-
-    if (!isMatch) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+    if (!validUser) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid refresh token",
+      });
     }
 
     const newAccessToken = jwt.sign(
-      { id: user._id },
+      { id: validUser._id },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "15m" },
     );
 
     res.status(200).json({
       accessToken: newAccessToken,
     });
-  })
+  }),
 );
 
 //  CREATING LOG-OUT ROUTE
@@ -227,6 +235,6 @@ router.post(
     res.clearCookie("refreshToken");
 
     res.status(200).json({ message: "Logged out successfully" });
-  })
+  }),
 );
 export default router;

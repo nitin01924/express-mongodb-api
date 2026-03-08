@@ -1,8 +1,5 @@
 export const allowSelfOrAdmin = (req, res, next) => {
-  if (
-    req.user.role === "admin" ||
-    req.user._id.toString() === req.params.id
-  ) {
+  if (req.user.role === "admin" || req.user._id.toString() === req.params.id) {
     return next();
   }
 
